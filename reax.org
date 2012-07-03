@@ -1,0 +1,2 @@
+* overview
+this is a module to facilitate preparation of reaxx input files, especially the geometry file and trainset.in file.
