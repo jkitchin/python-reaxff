@@ -157,7 +157,7 @@ def write_bgf(atoms, geofile=None):
 	# energy in kcal
 	calc = atoms.get_calculator()
 	if calc is not None:
-		directory = os.path.abspath(calc.dir)
+		directory = os.path.abspath(calc.vaspdir)
 		energy = atoms.get_potential_energy()*23.061
 	else:
 		directory = 'None'
