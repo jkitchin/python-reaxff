@@ -228,7 +228,10 @@ if __name__ in ['__main__']:
     import glob, os
 
     # first check if we are up to date
-    geotime = os.path.getmtime('geo')
+    if os.path.exists('geo'):
+	geotime = os.path.getmtime('geo')
+    else:
+        geotime = None
 
     dirs = glob.glob('[0-9]*')
 
