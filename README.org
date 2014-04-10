@@ -1,0 +1,1037 @@
+* Introduction
+this is a module to facilitate preparation of reaxx input files, especially the geometry file and trainset.in file.
+
+See this file for some documentation of the formats.
+http://www.wag.caltech.edu/home/duin/reax_um.pdf
+
+* COMMENT Generating geo files
+
+The principle function used to create geo files is reax.geo.write_bgf. This function takes an atoms object, and writes an entry to a geofile. It will raise an exception if you have written that atoms to the file before. 
+
+As an example, we will create a geo file from some directories from an ATAT calculation. We need to have entries for every geometry we are going to train against, which includes the equation of state calculations. These calculations are stored in a directory called eos-exp inside each ATAT directory.
+
+#+BEGIN_SRC python
+import os
+
+from geo import *
+from jasp import *
+
+os.chdir('/home-research/jkitchin/research/fe-ni-al/AlNi_fcc')
+os.unlink('geo')
+for i in [0, 1, 2, 3]:
+    wd = '{}'.format(i)
+    with jasp(wd) as calc:
+        atoms = calc.get_atoms()
+    write_bgf(atoms, 'geo')
+
+    # Now, we add the eos calculations
+    for d in os.listdir(os.path.join(wd,'eos-exp')):
+        nwd = os.path.join(wd, 'eos-exp', d)
+        if (os.path.isdir(nwd)
+            and os.path.exists(os.path.join(nwd, 'OUTCAR'))):
+            with jasp(nwd) as calc:
+                atoms = calc.get_atoms()
+            write_bgf(atoms, 'geo')
+#+END_SRC
+
+#+RESULTS:
+
+Now, let us see the results.
+
+#+BEGIN_SRC sh
+cat '/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/geo'
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0
+XTLGRF 200
+DESCRP b92e4a4aaa2b15b
+REMARK created by reax.geo
+CRYSTX     2.85573    2.85573    2.85573   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.29910481
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+0
+XTLGRF 200
+DESCRP 96d77167125bccf
+REMARK created by reax.geo
+CRYSTX     2.85574    2.85574    2.85574   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.29910481
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+10
+XTLGRF 200
+DESCRP f9acb4130a63a51
+REMARK created by reax.geo
+CRYSTX     2.94791    2.94791    2.94791   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.54616316
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+12
+XTLGRF 200
+DESCRP 72ada980e18d7f7
+REMARK created by reax.geo
+CRYSTX     2.96568    2.96568    2.96568   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.245563025
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+15
+XTLGRF 200
+DESCRP 719cb1f2e6d122d
+REMARK created by reax.geo
+CRYSTX     2.99192    2.99192    2.99192   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -84.725745024
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+2
+XTLGRF 200
+DESCRP 10976c1b680050a
+REMARK created by reax.geo
+CRYSTX     2.87464    2.87464    2.87464   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.267695728
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+4
+XTLGRF 200
+DESCRP 769ce5515f17062
+REMARK created by reax.geo
+CRYSTX     2.89331    2.89331    2.89331   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.170263003
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+6
+XTLGRF 200
+DESCRP d19b3bb9977fb49
+REMARK created by reax.geo
+CRYSTX     2.91174    2.91174    2.91174   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.013448203
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f+8
+XTLGRF 200
+DESCRP 438895f7a40ac58
+REMARK created by reax.geo
+CRYSTX     2.92994    2.92994    2.92994   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.803316371
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-10
+XTLGRF 200
+DESCRP 2fb84769bac2306
+REMARK created by reax.geo
+CRYSTX     2.75718    2.75718    2.75718   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.145916444
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-12
+XTLGRF 200
+DESCRP 228a8dd90a2c50b
+REMARK created by reax.geo
+CRYSTX     2.73660    2.73660    2.73660   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -84.577624221
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-15
+XTLGRF 200
+DESCRP b34659113c78767
+REMARK created by reax.geo
+CRYSTX     2.70515    2.70515    2.70515   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -83.446805025
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-2
+XTLGRF 200
+DESCRP 08a1895c184876d
+REMARK created by reax.geo
+CRYSTX     2.83657    2.83657    2.83657   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.256072984
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-4
+XTLGRF 200
+DESCRP ad475a5750e8ec9
+REMARK created by reax.geo
+CRYSTX     2.81714    2.81714    2.81714   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -86.131151547
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-6
+XTLGRF 200
+DESCRP bb006cbdda12651
+REMARK created by reax.geo
+CRYSTX     2.79744    2.79744    2.79744   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.912095108
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/0/eos-exp/f-8
+XTLGRF 200
+DESCRP a285da536866087
+REMARK created by reax.geo
+CRYSTX     2.77746    2.77746    2.77746   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00000   0.00000   0.00000 Al     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -85.587280923
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1
+XTLGRF 200
+DESCRP ae62c3e3e5941fd
+REMARK created by reax.geo
+CRYSTX     2.48978    2.48978    2.48978   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -127.227882915
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+0
+XTLGRF 200
+DESCRP 017d4d131e74676
+REMARK created by reax.geo
+CRYSTX     2.48978    2.48978    2.48978   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -127.227721488
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+10
+XTLGRF 200
+DESCRP 8bfca6e2cb5a6c4
+REMARK created by reax.geo
+CRYSTX     2.57015    2.57015    2.57015   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -125.836405236
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+12
+XTLGRF 200
+DESCRP 807a2ecf09447fd
+REMARK created by reax.geo
+CRYSTX     2.58563    2.58563    2.58563   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -125.317901712
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+15
+XTLGRF 200
+DESCRP 219ae9ef5ca014c
+REMARK created by reax.geo
+CRYSTX     2.60852    2.60852    2.60852   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -124.431044835
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+2
+XTLGRF 200
+DESCRP 89b755c7fcb20e8
+REMARK created by reax.geo
+CRYSTX     2.50627    2.50627    2.50627   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -127.14359496
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+4
+XTLGRF 200
+DESCRP ce31aa627931319
+REMARK created by reax.geo
+CRYSTX     2.52255    2.52255    2.52255   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -126.950874183
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+6
+XTLGRF 200
+DESCRP a7d17f7e79d04ff
+REMARK created by reax.geo
+CRYSTX     2.53861    2.53861    2.53861   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -126.663303513
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f+8
+XTLGRF 200
+DESCRP bd2a33549ac94f9
+REMARK created by reax.geo
+CRYSTX     2.55448    2.55448    2.55448   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -126.288470019
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-10
+XTLGRF 200
+DESCRP bd178676bc49638
+REMARK created by reax.geo
+CRYSTX     2.40385    2.40385    2.40385   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -125.46475416
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-12
+XTLGRF 200
+DESCRP d6bdf9d1fd6fdd4
+REMARK created by reax.geo
+CRYSTX     2.38592    2.38592    2.38592   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -124.539500718
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-15
+XTLGRF 200
+DESCRP 9ff7c76a4ae2d8d
+REMARK created by reax.geo
+CRYSTX     2.35848    2.35848    2.35848   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -122.666809152
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-2
+XTLGRF 200
+DESCRP 8422db0d9cc1020
+REMARK created by reax.geo
+CRYSTX     2.47306    2.47306    2.47306   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -127.188402483
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-4
+XTLGRF 200
+DESCRP a1a3da4ee5c0ee1
+REMARK created by reax.geo
+CRYSTX     2.45614    2.45614    2.45614   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -127.010486868
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-6
+XTLGRF 200
+DESCRP 6cf09437f2f3c4d
+REMARK created by reax.geo
+CRYSTX     2.43895    2.43895    2.43895   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -126.677647455
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/1/eos-exp/f-8
+XTLGRF 200
+DESCRP 31718e1780c3ff3
+REMARK created by reax.geo
+CRYSTX     2.42153    2.42153    2.42153   60.00000   60.00000   60.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -126.169613625
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2
+XTLGRF 200
+DESCRP 8e13ad05577dbab
+REMARK created by reax.geo
+CRYSTX     4.21491    4.21491    4.21491   37.77179   37.77179   37.77179
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.15824   1.86074   5.43916 Al     1 1  0.00000
+HETATM     1 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.409046079
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+0
+XTLGRF 200
+DESCRP cdf1c5197e3f781
+REMARK created by reax.geo
+CRYSTX     4.21491    4.21491    4.21491   37.77172   37.77172   37.77172
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.15824   1.86074   5.43916 Al     1 1  0.00000
+HETATM     1 Ni                  0.00000   0.00000   0.00000 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.408884652
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+10
+XTLGRF 200
+DESCRP 2f698c6f24a158f
+REMARK created by reax.geo
+CRYSTX     4.35097    4.35097    4.35097   37.77169   37.77169   37.77169
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.17715   1.89112   5.52796 Al     1 1  0.00000
+HETATM     1 Ni                  2.37235   3.81123  11.14068 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -232.359661131
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+12
+XTLGRF 200
+DESCRP f0398833d40d7ed
+REMARK created by reax.geo
+CRYSTX     4.37719    4.37719    4.37719   37.77167   37.77167   37.77167
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.18119   1.89761   5.54693 Al     1 1  0.00000
+HETATM     1 Ni                  2.38272   3.82789  11.18938 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -231.519110742
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+15
+XTLGRF 200
+DESCRP 18fb2774ddf2bff
+REMARK created by reax.geo
+CRYSTX     4.41592    4.41592    4.41592   37.77169   37.77169   37.77169
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.18559   1.90467   5.56758 Al     1 1  0.00000
+HETATM     1 Ni                  2.39961   3.85502  11.26868 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -230.062162884
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+2
+XTLGRF 200
+DESCRP b5c9f43c1739fa2
+REMARK created by reax.geo
+CRYSTX     4.24283    4.24283    4.24283   37.77173   37.77173   37.77173
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.16226   1.86719   5.45801 Al     1 1  0.00000
+HETATM     1 Ni                  2.32781   3.73968  10.93153 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.340370421
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+4
+XTLGRF 200
+DESCRP d6547fc4a9cbbba
+REMARK created by reax.geo
+CRYSTX     4.27038    4.27038    4.27038   37.77170   37.77170   37.77170
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.16587   1.87300   5.47499 Al     1 1  0.00000
+HETATM     1 Ni                  2.33934   3.75820  10.98565 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.084047406
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+6
+XTLGRF 200
+DESCRP 58d8a528e7e3451
+REMARK created by reax.geo
+CRYSTX     4.29758    4.29758    4.29758   37.77190   37.77190   37.77190
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.16955   1.87891   5.49225 Al     1 1  0.00000
+HETATM     1 Ni                  2.35062   3.77632  11.03857 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -233.6563581
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f+8
+XTLGRF 200
+DESCRP e66ae6536dfbc48
+REMARK created by reax.geo
+CRYSTX     4.32444    4.32444    4.32444   37.77176   37.77176   37.77176
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.17304   1.88451   5.50863 Al     1 1  0.00000
+HETATM     1 Ni                  2.36189   3.79443  11.09154 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -233.075428449
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-10
+XTLGRF 200
+DESCRP d7898533abefd14
+REMARK created by reax.geo
+CRYSTX     4.06946    4.06946    4.06946   37.77179   37.77179   37.77179
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.13831   1.82872   5.34555 Al     1 1  0.00000
+HETATM     1 Ni                  0.01993   0.03202   0.09360 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -231.066999837
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-12
+XTLGRF 200
+DESCRP 151d265e24aaca2
+REMARK created by reax.geo
+CRYSTX     4.03908    4.03908    4.03908   37.77170   37.77170   37.77170
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.13421   1.82214   5.32632 Al     1 1  0.00000
+HETATM     1 Ni                  0.02403   0.03860   0.11283 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -229.44957048
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-15
+XTLGRF 200
+DESCRP ddb94050bd6b70e
+REMARK created by reax.geo
+CRYSTX     3.99265    3.99265    3.99265   37.77177   37.77177   37.77177
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.12799   1.81214   5.29707 Al     1 1  0.00000
+HETATM     1 Ni                  0.03026   0.04861   0.14208 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -226.252416501
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-2
+XTLGRF 200
+DESCRP b77f88ee348db54
+REMARK created by reax.geo
+CRYSTX     4.18663    4.18663    4.18663   37.77167   37.77167   37.77167
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.15423   1.85430   5.42035 Al     1 1  0.00000
+HETATM     1 Ni                  0.00400   0.00643   0.01880 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.266506038
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-4
+XTLGRF 200
+DESCRP d1e06d9e0bef0b7
+REMARK created by reax.geo
+CRYSTX     4.15795    4.15795    4.15795   37.77162   37.77162   37.77162
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.15039   1.84814   5.40233 Al     1 1  0.00000
+HETATM     1 Ni                  0.00784   0.01260   0.03683 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -233.889942969
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-6
+XTLGRF 200
+DESCRP d54ff840ea97b4f
+REMARK created by reax.geo
+CRYSTX     4.12887    4.12887    4.12887   37.77184   37.77184   37.77184
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.14642   1.84175   5.38364 Al     1 1  0.00000
+HETATM     1 Ni                  0.01182   0.01899   0.05551 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -233.250438378
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/2/eos-exp/f-8
+XTLGRF 200
+DESCRP faf3d71f227e71e
+REMARK created by reax.geo
+CRYSTX     4.09937    4.09937    4.09937   37.77167   37.77167   37.77167
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  1.14238   1.83525   5.36466 Al     1 1  0.00000
+HETATM     1 Ni                  0.01586   0.02548   0.07449 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -232.319996211
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3
+XTLGRF 200
+DESCRP 9f23a5d523ba81e
+REMARK created by reax.geo
+CRYSTX     2.81673    2.81673    3.00437   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                 -0.00000   0.00000   0.00000 Al     1 1  0.00000
+HETATM     1 Ni                  1.40837   1.40837   1.50219 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.307997533
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+0
+XTLGRF 200
+DESCRP e46d258c64ef4da
+REMARK created by reax.geo
+CRYSTX     2.81673    2.81673    3.00437   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                 -0.00000   0.00000   0.00000 Al     1 1  0.00000
+HETATM     1 Ni                  1.40837   1.40837   1.50219 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.356402572
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+10
+XTLGRF 200
+DESCRP b7dc2afb79a7a53
+REMARK created by reax.geo
+CRYSTX     2.90765    2.90765    3.10135   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.88416   2.88416   3.07558 Al     1 1  0.00000
+HETATM     1 Ni                  1.43186   1.43186   1.52796 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -243.953302149
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+12
+XTLGRF 200
+DESCRP aa34a7c4db162a1
+REMARK created by reax.geo
+CRYSTX     2.92517    2.92517    3.12003   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.89722   2.89722   3.08956 Al     1 1  0.00000
+HETATM     1 Ni                  1.43632   1.43632   1.53266 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -243.186616143
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+15
+XTLGRF 200
+DESCRP 39f1866b9e106f4
+REMARK created by reax.geo
+CRYSTX     2.95105    2.95105    3.14765   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.91884   2.91884   3.11290 Al     1 1  0.00000
+HETATM     1 Ni                  1.44058   1.44058   1.53694 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -241.809182613
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+2
+XTLGRF 200
+DESCRP b244fc3921440c6
+REMARK created by reax.geo
+CRYSTX     2.83539    2.83539    3.02427   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.83050   2.83050   3.01881 Al     1 1  0.00000
+HETATM     1 Ni                  1.41325   1.41325   1.50765 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.459485242
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+4
+XTLGRF 200
+DESCRP 55c2636aa4e0823
+REMARK created by reax.geo
+CRYSTX     2.85380    2.85380    3.04391   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.84445   2.84445   3.03351 Al     1 1  0.00000
+HETATM     1 Ni                  1.41771   1.41771   1.51259 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.353104849
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+6
+XTLGRF 200
+DESCRP d712472047345e7
+REMARK created by reax.geo
+CRYSTX     2.87197    2.87197    3.06329   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.85750   2.85750   3.04722 Al     1 1  0.00000
+HETATM     1 Ni                  1.42284   1.42284   1.51826 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.053680825
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f+8
+XTLGRF 200
+DESCRP ec9d7ced33e60b9
+REMARK created by reax.geo
+CRYSTX     2.88993    2.88993    3.08244   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  2.87072   2.87072   3.06122 Al     1 1  0.00000
+HETATM     1 Ni                  1.42758   1.42758   1.52341 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -244.580768898
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-10
+XTLGRF 200
+DESCRP d388c64cd56ab2c
+REMARK created by reax.geo
+CRYSTX     2.71952    2.71952    2.90069   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.02354   0.02354   0.02711 Al     1 1  0.00000
+HETATM     1 Ni                  1.38482   1.38482   1.47508 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -240.729950874
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-12
+XTLGRF 200
+DESCRP 510d3c9c74cf7e5
+REMARK created by reax.geo
+CRYSTX     2.69922    2.69922    2.87904   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.02852   0.02852   0.03294 Al     1 1  0.00000
+HETATM     1 Ni                  1.37984   1.37984   1.46925 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -238.751340135
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-15
+XTLGRF 200
+DESCRP 684dd3f52bd791a
+REMARK created by reax.geo
+CRYSTX     2.66820    2.66820    2.84594   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.03584   0.03584   0.04165 Al     1 1  0.00000
+HETATM     1 Ni                  1.37253   1.37253   1.46054 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -234.927964701
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-2
+XTLGRF 200
+DESCRP 8dae7f355878af1
+REMARK created by reax.geo
+CRYSTX     2.79782    2.79782    2.98421   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00491   0.00491   0.00557 Al     1 1  0.00000
+HETATM     1 Ni                  1.40346   1.40346   1.49662 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -245.016368127
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-4
+XTLGRF 200
+DESCRP a0aaf9afea39e45
+REMARK created by reax.geo
+CRYSTX     2.77866    2.77866    2.96377   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.00956   0.00956   0.01091 Al     1 1  0.00000
+HETATM     1 Ni                  1.39881   1.39881   1.49128 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -244.416989676
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-6
+XTLGRF 200
+DESCRP 245bf84490158b1
+REMARK created by reax.geo
+CRYSTX     2.75923    2.75923    2.94304   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.01414   0.01414   0.01619 Al     1 1  0.00000
+HETATM     1 Ni                  1.39423   1.39423   1.48600 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -243.524367549
+END
+
+# file:/home-research/jkitchin/research/fe-ni-al/AlNi_fcc/3/eos-exp/f-8
+XTLGRF 200
+DESCRP c7e897607f1973f
+REMARK created by reax.geo
+CRYSTX     2.73952    2.73952    2.92202   90.00000   90.00000   90.00000
+FORMAT ATOM   (a6,1x,i5,1x,a5,1x,a3,1x,a1,1x,a5,3f10.5,1x,a5,i3,i2,1x,f8.5)
+HETATM     0 Al                  0.01871   0.01871   0.02148 Al     1 1  0.00000
+HETATM     1 Ni                  1.38966   1.38966   1.48071 Ni     1 1  0.00000
+FORMAT CONECT (a6,12i6)
+UNIT ENERGY   kcal
+ENERGY        -242.306723688
+END
+#+end_example
+
+* Generating trainset.in.
+The trainsets are more complicated to make. The trainset.in file has several different sections. We need to create a dictionary that has the contents of these sections in it, and then a convenient function will write out the file for us. This file has heats of formation, and equation of state data.
+
+#+BEGIN_SRC python
+import glob, os
+
+from trainset import *
+from jasp import *
+
+os.chdir('/home-research/jkitchin/research/fe-ni-al/AlNi_fcc')
+if os.path.exists('trainset.in'): os.unlink('trainset.in')
+# reference endpoints
+with jasp('0') as c0:
+    atoms0 = c0.get_atoms()
+    e0 = atoms0.get_potential_energy()/len(atoms0)
+    d0 = reax_hash(atoms0)
+
+with jasp('1') as c1:
+    atoms1 = c1.get_atoms()
+    e1 = atoms1.get_potential_energy()/len(atoms1)
+    d1 = reax_hash(atoms1)
+
+#reference energies in eV/atom
+reference_energies = {}
+reference_energies[atoms0[0].symbol] = (d0, e0)  # (description, energy)
+reference_energies[atoms1[0].symbol] = (d1, e1)
+
+cells = parse_trainset()
+
+dirs = [0, 1, 2, 3]
+# First we do the equations of state
+for wd in dirs:
+    d = str(wd) # directory name as string
+    if (os.path.exists(os.path.join(d,'OUTCAR'))
+        and not os.path.exists(os.path.join(d,'error'))):
+        # geometry of cell
+        with jasp(d) as calc:
+            atoms = calc.get_atoms()
+        cells = cell_parameters(atoms, weight=1.0, cells=cells)
+
+        # equation of state Adri suggested we put a higher weight on
+        # points close to the minimum
+        eosdir = os.path.join(d,'eos-exp')
+        if os.path.isdir(eosdir):
+            edirs = glob.glob('%s/*' % eosdir)
+            cells['ENERGY'].append('# Volume %s' % reax_hash(atoms))
+            for ed in edirs:
+                if (os.path.exists(os.path.join(ed,'energy'))
+                    and not os.path.exists(os.path.join(ed,'error'))):
+                    with jasp(ed) as calc2:
+                        atoms2 = calc2.get_atoms()
+                        e1 = atoms.get_potential_energy()
+                        e2 = atoms2.get_potential_energy()
+                        weight = 0.1 + 0.25*np.abs((e2 - e1))*23.061 #kcal
+
+                        cells = eos(atoms,
+                                    atoms2,
+                                    weight=weight,
+                                    cells=cells)
+
+
+# comment line for readability
+cells['ENERGY'].append('# Heats_of_formation')
+
+for i in [0, 1, 2]:
+    with jasp('{}'.format(i)) as calc:
+        atoms = calc.get_atoms()
+        
+    # This is a heat of formation
+    cells = energy(atoms,
+                   reference_energies,
+                   weight=1.0,
+                   cells=cells)
+
+write_trainset('trainset.in', cells=cells)
+#+END_SRC
+
+#+RESULTS:
+
+Now the results.
+
+#+BEGIN_SRC sh
+cat /home-research/jkitchin/research/fe-ni-al/AlNi_fcc/trainset.in
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ENERGY
+# Volume b92e4a4aaa2b15b
+0.10 + b92e4a4aaa2b15b /1 - 96d77167125bccf /1 0.000000
+0.29 + b92e4a4aaa2b15b /1 - f9acb4130a63a51 /1 -0.752942
+0.36 + b92e4a4aaa2b15b /1 - 72ada980e18d7f7 /1 -1.053542
+0.49 + b92e4a4aaa2b15b /1 - 719cb1f2e6d122d /1 -1.573360
+0.11 + b92e4a4aaa2b15b /1 - 10976c1b680050a /1 -0.031409
+0.13 + b92e4a4aaa2b15b /1 - 769ce5515f17062 /1 -0.128842
+0.17 + b92e4a4aaa2b15b /1 - d19b3bb9977fb49 /1 -0.285657
+0.22 + b92e4a4aaa2b15b /1 - 438895f7a40ac58 /1 -0.495788
+0.39 + b92e4a4aaa2b15b /1 - 2fb84769bac2306 /1 -1.153188
+0.53 + b92e4a4aaa2b15b /1 - 228a8dd90a2c50b /1 -1.721481
+0.81 + b92e4a4aaa2b15b /1 - b34659113c78767 /1 -2.852300
+0.11 + b92e4a4aaa2b15b /1 - 08a1895c184876d /1 -0.043032
+0.14 + b92e4a4aaa2b15b /1 - ad475a5750e8ec9 /1 -0.167953
+0.20 + b92e4a4aaa2b15b /1 - bb006cbdda12651 /1 -0.387010
+0.28 + b92e4a4aaa2b15b /1 - a285da536866087 /1 -0.711824
+# Volume ae62c3e3e5941fd
+0.10 + ae62c3e3e5941fd /1 - 017d4d131e74676 /1 -0.000161
+0.45 + ae62c3e3e5941fd /1 - 8bfca6e2cb5a6c4 /1 -1.391478
+0.58 + ae62c3e3e5941fd /1 - 807a2ecf09447fd /1 -1.909981
+0.80 + ae62c3e3e5941fd /1 - 219ae9ef5ca014c /1 -2.796838
+0.12 + ae62c3e3e5941fd /1 - 89b755c7fcb20e8 /1 -0.084288
+0.17 + ae62c3e3e5941fd /1 - ce31aa627931319 /1 -0.277009
+0.24 + ae62c3e3e5941fd /1 - a7d17f7e79d04ff /1 -0.564579
+0.33 + ae62c3e3e5941fd /1 - bd2a33549ac94f9 /1 -0.939413
+0.54 + ae62c3e3e5941fd /1 - bd178676bc49638 /1 -1.763129
+0.77 + ae62c3e3e5941fd /1 - d6bdf9d1fd6fdd4 /1 -2.688382
+1.24 + ae62c3e3e5941fd /1 - 9ff7c76a4ae2d8d /1 -4.561074
+0.11 + ae62c3e3e5941fd /1 - 8422db0d9cc1020 /1 -0.039480
+0.15 + ae62c3e3e5941fd /1 - a1a3da4ee5c0ee1 /1 -0.217396
+0.24 + ae62c3e3e5941fd /1 - 6cf09437f2f3c4d /1 -0.550235
+0.36 + ae62c3e3e5941fd /1 - 31718e1780c3ff3 /1 -1.058269
+# Volume 8e13ad05577dbab
+0.10 + 8e13ad05577dbab /1 - cdf1c5197e3f781 /1 -0.000161
+0.61 + 8e13ad05577dbab /1 - 2f698c6f24a158f /1 -2.049385
+0.82 + 8e13ad05577dbab /1 - f0398833d40d7ed /1 -2.889935
+1.19 + 8e13ad05577dbab /1 - 18fb2774ddf2bff /1 -4.346883
+0.12 + 8e13ad05577dbab /1 - b5c9f43c1739fa2 /1 -0.068676
+0.18 + 8e13ad05577dbab /1 - d6547fc4a9cbbba /1 -0.324999
+0.29 + 8e13ad05577dbab /1 - 58d8a528e7e3451 /1 -0.752688
+0.43 + 8e13ad05577dbab /1 - e66ae6536dfbc48 /1 -1.333618
+0.94 + 8e13ad05577dbab /1 - d7898533abefd14 /1 -3.342046
+1.34 + 8e13ad05577dbab /1 - 151d265e24aaca2 /1 -4.959476
+2.14 + 8e13ad05577dbab /1 - ddb94050bd6b70e /1 -8.156630
+0.14 + 8e13ad05577dbab /1 - b77f88ee348db54 /1 -0.142540
+0.23 + 8e13ad05577dbab /1 - d1e06d9e0bef0b7 /1 -0.519103
+0.39 + 8e13ad05577dbab /1 - d54ff840ea97b4f /1 -1.158608
+0.62 + 8e13ad05577dbab /1 - faf3d71f227e71e /1 -2.089050
+# Volume 9f23a5d523ba81e
+0.11 + 9f23a5d523ba81e /1 - e46d258c64ef4da /1 0.048405
+0.44 + 9f23a5d523ba81e /1 - b7dc2afb79a7a53 /1 -1.354695
+0.63 + 9f23a5d523ba81e /1 - aa34a7c4db162a1 /1 -2.121381
+0.97 + 9f23a5d523ba81e /1 - 39f1866b9e106f4 /1 -3.498815
+0.14 + 9f23a5d523ba81e /1 - b244fc3921440c6 /1 0.151488
+0.11 + 9f23a5d523ba81e /1 - 55c2636aa4e0823 /1 0.045107
+0.16 + 9f23a5d523ba81e /1 - d712472047345e7 /1 -0.254317
+0.28 + 9f23a5d523ba81e /1 - ec9d7ced33e60b9 /1 -0.727229
+1.24 + 9f23a5d523ba81e /1 - d388c64cd56ab2c /1 -4.578047
+1.74 + 9f23a5d523ba81e /1 - 510d3c9c74cf7e5 /1 -6.556657
+2.70 + 9f23a5d523ba81e /1 - 684dd3f52bd791a /1 -10.380033
+0.17 + 9f23a5d523ba81e /1 - 8dae7f355878af1 /1 -0.291629
+0.32 + 9f23a5d523ba81e /1 - a0aaf9afea39e45 /1 -0.891008
+0.55 + 9f23a5d523ba81e /1 - 245bf84490158b1 /1 -1.783630
+0.85 + 9f23a5d523ba81e /1 - c7e897607f1973f /1 -3.001274
+# Heats_of_formation
+1.00 + b92e4a4aaa2b15b /1 - b92e4a4aaa2b15b / 1.000000   0.000000
+1.00 + ae62c3e3e5941fd /1 - ae62c3e3e5941fd / 1.000000   0.000000
+1.00 + 8e13ad05577dbab /1 - ae62c3e3e5941fd / 1.000000  - b92e4a4aaa2b15b / 1.000000   -20.882058
+ENDENERGY
+CELL PARAMETERS
+# created by reax.trainset
+b92e4a4aaa2b15b 1.000000 a 2.85573030929
+b92e4a4aaa2b15b 1.000000 b 2.85573030929
+b92e4a4aaa2b15b 1.000000 c 2.85573030929
+b92e4a4aaa2b15b 1.000000 alpha 60.0
+b92e4a4aaa2b15b 1.000000 beta 60.0
+b92e4a4aaa2b15b 1.000000 gamma 60.0
+# created by reax.trainset
+ae62c3e3e5941fd 1.000000 a 2.48978198238
+ae62c3e3e5941fd 1.000000 b 2.48978198238
+ae62c3e3e5941fd 1.000000 c 2.48978198238
+ae62c3e3e5941fd 1.000000 alpha 60.0
+ae62c3e3e5941fd 1.000000 beta 60.0
+ae62c3e3e5941fd 1.000000 gamma 60.0
+# created by reax.trainset
+8e13ad05577dbab 1.000000 a 4.21491031746
+8e13ad05577dbab 1.000000 b 4.21491031746
+8e13ad05577dbab 1.000000 c 4.21491031746
+8e13ad05577dbab 1.000000 alpha 37.771789037
+8e13ad05577dbab 1.000000 beta 37.771789037
+8e13ad05577dbab 1.000000 gamma 37.771789037
+# created by reax.trainset
+9f23a5d523ba81e 1.000000 a 2.81673152555
+9f23a5d523ba81e 1.000000 b 2.81673152555
+9f23a5d523ba81e 1.000000 c 3.00437259302
+9f23a5d523ba81e 1.000000 alpha 90.0
+9f23a5d523ba81e 1.000000 beta 90.0
+9f23a5d523ba81e 1.000000 gamma 90.0
+ENDCELL PARAMETERS
+#+end_example
+
